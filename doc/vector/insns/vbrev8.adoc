@@ -11,10 +11,10 @@ Encoding (Vector)::
 [wavedrom, , svg]
 ....
 {reg:[
-{bits: 7, name: 'OPMVV'},
+{bits: 7, name: 'OP-V'},
 {bits: 5, name: 'vd'},
-{bits: 3, name: 'func3'},
-{bits: 5, name: 'vs1=0'},
+{bits: 3, name: 'OPMVV'},
+{bits: 5, name: 'funct5'},
 {bits: 5, name: 'vs2'},
 {bits: 1, name: 'vm'},
 {bits: 6, name: 'funct6'},
@@ -24,17 +24,15 @@ Encoding (Vector)::
 Description:: 
 This instruction reverses the order of the bits in each byte in `vs2`.
 
-While this instruction supports the `SEW`, the behavior on each byte operated upon does not vary.
-
 Note::
 In some ways this is similar to how the bit logical instructions operate.  
 
 Operation::
 [source,sail]
 --
-function clause execute (VBREV8(vs1)) = {
+function clause execute (VBREV8(vs2)) = {
   foreach (i from vstart to vl) {
-    input = get_velem(vs1, SEW, i);
+    input = get_velem(vs2, SEW, i);
     let output : SEW = 0;
     foreach (i from 0 to SEW by 8) 
       output[i+7..i] = reverse_bits_in_byte(input[i+7..i]);

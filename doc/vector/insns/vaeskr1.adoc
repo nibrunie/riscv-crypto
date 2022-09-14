@@ -1,19 +1,19 @@
-[[insns-vaeskr2, Vector AES-256 Reverse KeySchedule]]
-= vaeskr2.vi
+[[insns-vaeskr1, Vector AES-128 Reverse KeySchedule]]
+= vaeskr1.vi
 
 Synopsis::
-Vector AES-256 Reverse KeySchedule
+Vector AES-128 Reverse KeySchedule
 
 Mnemonic::
-vaeskr2.vi vd, vs2, rnd
+vaeskr1.vi vd, vs2, rnd
 
 Encoding::
 [wavedrom, , svg]
 ....
 {reg:[
-{bits: 7, name: 'OPMVV'},
+{bits: 7, name: 'OP-V'},
 {bits: 5, name: 'vd'},
-{bits: 3, name: 'func3'},
+{bits: 3, name: 'OPMVV'},
 {bits: 5, name: 'rnd'},
 {bits: 5, name: 'vs2'},
 {bits: 1, name: 'vm'},
@@ -22,13 +22,12 @@ Encoding::
 ....
 
 Description:: 
-This instruction implements a single round of the reverse AES-256 KeySchedule.
-It treats each 128-bit element group of `vs2` as the current AES round key,
-and each 128-bit element group of `vd` as the next (in forward sequence) AES round key.
+This instruction implements a single round of the reverse AES-128 KeySchedule.
+It treats each 128-bit element group of `vs2` as the current AES round key.
 The round number is stored in the 5-bit `rnd`immediate. Legal values are 1 - 10.
 Out of range values signal an illegal instruction exception.
 
-It applies a single AES-256 KeySchedule round to each element group, and
+It applies a single AES-128 reverse KeySchedule round to each element, and
 writes the 128-bit result to the corresponding element group in `vd`.
 
 This instruction only returns the generated key to the same element group as the source.
@@ -36,13 +35,13 @@ If it is desired to have the same key in all vector groups, either the input vec
 need to contain the same values, or the output from a particular group needs to be "broadcast"
 to the other groups using an instruction such as vrgather.
 
-This instruction treats `EEW=32` and `EGS=4`, regardless of `vtype.vsew`
-In order to properly specify the number of elements, vl needs to be set to
-vl = `vtype.vsew`/128. If vstart is not zero, it needs to be scaled similarly.
-This instruction requires that `Zvl128b` be implemented (i.e `VLEN>=128`).
+This instruction ignores `vtype.vsew`. +
+The number of element groups to be processed is `vl`/`EGS`.
+`vl` must be set to the number of `EEW=32` elements to be processed and 
+therefore must be a multiple of `EGS=4`. + 
+Likewise, `vstart` must be a multiple of `EGS=4`
 
-
-
+// This instruction requires that `Zvl128b` be implemented (i.e `VLEN>=128`).
 
 Operation::
 [source,pseudocode]
@@ -52,8 +51,7 @@ function clause execute (VAESESFK1(rcon, vs2)) = {
   vlen = vl/EGS * vtype.SEW/EEW
   foreach (i from vstart to vlen) {
     let current : bits(128) = get_velem(vs2, EGW=128, i);
-    let next : bits(128) = get_velem(vd, EGW=128, i);
-    let previous    : bits(128) = aes_128_forward_key_schedule(rcon, current, previous);
+    let previous    : bits(128) = aes_128_reverse_key_schedule(rcon, current);
     set_velem(vd, EGW=128, i, previous);
   }
   RETIRE_SUCCESS
@@ -71,3 +69,6 @@ Included in::
 | v0.1.0
 | In Development
 |===
+
+
+

@@ -1,5 +1,5 @@
 [[insns-vsm4r, SM4 Rounds]]
-= vsm4r.vv
+= vsm4r
 
 Synopsis::
 Vector SM4 Rounds
@@ -11,12 +11,12 @@ Encoding::
 [wavedrom, , svg]
 ....
 {reg:[
-{bits: 7, name: 'OPMVV'},
+{bits: 7, name: 'OP-V'},
 {bits: 5, name: 'vd'},
-{bits: 3, name: 'func3'},
+{bits: 3, name: 'OPMVV'},
 {bits: 5, name: 'vs1=0'},
 {bits: 5, name: 'vs2'},
-{bits: 1, name: 'vm=0'},
+{bits: 1, name: 'vm=1'},
 {bits: 6, name: 'funct6'},
 ]}
 ....
@@ -24,8 +24,8 @@ Encoding::
 Description:: 
 This instruction implements 4 rounds of SM4 Encryption/Decryption, producing four 32-bit outputs in
 a 128-bit 4-element group.
-It treats each 128-bit 4-element group of `vs1` as the four round keys and
-each 128-bit 4-element group of `vs1` as the data input.
+It treats each 128-bit 4-element group of `vs2` as the four round keys and
+each 128-bit 4-element group of `vs2` as the data input.
 
 vd (in) = {x[i-4], X[i-3]. X[i-2], X[i-1]} +
 vs2 = {rk[i-4],rk[i-3], rk[i-2], rk[i-1]} +

@@ -2,7 +2,7 @@
 = vclmulh.[vv,vx]
 
 Synopsis::
-Vector Carry-less Multiply by vector or immediate.
+Vector Carry-less Multiply Upper Part by vector or immediate.
 
 Mnemonic::
 vclmulh.vv vd, vs2, vs1 +
@@ -12,12 +12,12 @@ Encoding (Vector-Vector)::
 [wavedrom, , svg]
 ....
 {reg:[
-{bits: 7, name: 'OPMVV'},
+{bits: 7, name: 'OP-V'},
 {bits: 5, name: 'vd'},
-{bits: 3, name: 'func3'},
+{bits: 3, name: 'OPMVV'},
 {bits: 5, name: 'vs1'},
 {bits: 5, name: 'vs2'},
-{bits: 1, name: 'vm'},
+{bits: 1, name: 'vm=1'},
 {bits: 6, name: 'funct6'},
 ]}
 ....
@@ -26,12 +26,12 @@ Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
 {reg:[
-{bits: 7, name: 'OPMVV'},
+{bits: 7, name: 'OP-V'},
 {bits: 5, name: 'vd'},
-{bits: 3, name: 'func3'},
+{bits: 3, name: 'OPMVV'},
 {bits: 5, name: 'rs1'},
 {bits: 5, name: 'vs2'},
-{bits: 1, name: 'vm'},
+{bits: 1, name: 'vm=1'},
 {bits: 6, name: 'funct6'},
 ]}
 ....
@@ -43,11 +43,16 @@ The other operand can come from a vector register group `vs1`, or a scalar
 integer register `rs1`.
 For the scalar integer register, the operand is zero extended or truncated
 to `SEW` bits as appropriate.
+For each elements the `SEW-1` upper bits of the `(2 * SEW - 1)`-bit result are 
+returned. The most significant bit of each `SEW`-wide element is always 0.
+
+This instruction is only defined for `SEW=64`. The use of any other SEW with this instruction is reserved.
 
 Operation::
 [source,sail]
 --
 function clmulh(x, y, SEW) = { // TODO: not real Sail Code yet
+  // i=0 could be skipped, as x >> SEW will be 0
   result : bits(SEW) = zeros();
   foreach (i from 0 to (SEW - 1)) {
     if y[i] == bitone then result = result ^ (x >> (SEW - i));

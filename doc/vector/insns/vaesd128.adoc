@@ -1,26 +1,40 @@
 [[insns-vaesd128, Vector AES-128 decrypt all-rounds]]
-= vaesd128.v
+= vaesd128.[vv,vs]
 
 Synopsis::
 Vector AES-128 all rounds decryption instruction.
 
 Mnemonic::
-vaesd128.v vd, vs2
+vaesd128.vv vd, vs2, vs1 +
+vaesd128.vs vd, vs2, vs1
 
-Encoding (Vector)::
+Encoding (Vector-Vector)::
 [wavedrom, , svg]
 ....
 {reg:[
-{bits: 7, name: 'OPMVV'},
+{bits: 7, name: 'OP-V'},
 {bits: 5, name: 'vd'},
-{bits: 3, name: 'func3'},
-{bits: 5, name: 'vs1=0'},
+{bits: 3, name: 'OPMVV'},
+{bits: 5, name: 'vs1'},
 {bits: 5, name: 'vs2'},
-{bits: 1, name: 'vm=0'},
+{bits: 1, name: 'vm=1'},
 {bits: 6, name: 'funct6'},
 ]}
 ....
 
+Encoding (Vector-Scalar)::
+[wavedrom, , svg]
+....
+{reg:[
+{bits: 7, name: 'OP-V'},
+{bits: 5, name: 'vd'},
+{bits: 3, name: 'OPMVV'},
+{bits: 5, name: 'vs1'},
+{bits: 5, name: 'vs2'},
+{bits: 1, name: 'vm=1'},
+{bits: 6, name: 'funct6'},
+]}
+....
 
 Arguments::
 
@@ -34,14 +48,14 @@ Arguments::
 |EEW
 |Definition
 
-| Vd  | input  | 128  | 4 | 32 | Cipher text
-| Vs2 | input  | 128  | 4 | 32 | Final Round key
+| Vs2 | input  | 128  | 4 | 32 | Cipher text
+| Vs1 | input  | 128  | 4 | 32 | Final Round key
 | Vd  | output | 128  | 4 | 32 | Plain text 
 |===
 
 Description:: 
 This instruction implements the entire AES-128 block cipher decryption
-function. Starting with the final round key, it generates each of the earlier round keys
+function. Starting with the final round key, it internally generates each of the earlier round keys
 and performs each of the rounds.
 
 It treats each `EGW=128` element group of `vd` as the plaintext
@@ -55,10 +69,12 @@ This instruction operates on element groups in the source and destination regist
 - Effective Element Width (EEW) = 32 bits
 - Element Group Size (EGS) = 4 elements
 
+This instruction ignores `vtype.vsew`. +
+The number of element groups to be processed is `vl`/`EGS`.
+`vl` must be set to the number of `EEW=32` elements to be processed and 
+therefore must be a multiple of `EGS=4`. + 
+Likewise, `vstart` must be a multiple of `EGS=4`
 
-This instruction treats `EEW=32` and `EGS=4`, regardless of `vtype.vsew`
-In order to properly specify the number of elements, vl needs to be set to
-vl = `vtype.vsew`/128. If `vstart` is not zero, it needs to be scaled similarly.
 This instruction requires that `Zvl128b` be implemented (i.e `VLEN>=128`).
 
 Operation::

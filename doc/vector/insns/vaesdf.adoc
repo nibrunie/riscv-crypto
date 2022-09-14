@@ -1,22 +1,37 @@
 [[insns-vaesdf, Vector AES decrypt final round]]
-= vaesdf.vv
+= vaesdf.[vv,vs]
 
 Synopsis::
 Vector AES final round decryption instruction.
 
 Mnemonic::
-vaesdf.v vd, vs2
+vaesdf.vv vd, vs2 + 
+vaesdf.vs vd, vs2
 
-Encoding (Vector)::
+Encoding (Vector-Vector)::
 [wavedrom, , svg]
 ....
 {reg:[
-{bits: 7, name: 'OPMVV'},
+{bits: 7, name: 'OP-V'},
 {bits: 5, name: 'vd'},
-{bits: 3, name: 'func3'},
-{bits: 5, name: 'vs1=0'},
+{bits: 3, name: 'OPMVV'},
+{bits: 5, name: 'funct5'},
 {bits: 5, name: 'vs2'},
-{bits: 1, name: 'vm=0'},
+{bits: 1, name: 'vm=1'},
+{bits: 6, name: 'funct6'},
+]}
+....
+
+Encoding (Vector-Scalar)::
+[wavedrom, , svg]
+....
+{reg:[
+{bits: 7, name: 'OP-V'},
+{bits: 5, name: 'vd'},
+{bits: 3, name: 'OPMVV'},
+{bits: 5, name: 'vs1'},
+{bits: 5, name: 'vs2'},
+{bits: 1, name: 'vm=1'},
 {bits: 6, name: 'funct6'},
 ]}
 ....
@@ -33,9 +48,9 @@ Arguments::
 |EEW
 |Definition
 
-| Vd  | input  | 128  | 4 | 32 | Cipher text
-| Vs2 | input  | 128  | 4 | 32 | Final Round key
-| Vd  | output | 128  | 4 | 32 | Plain text 
+| Vd  | input  | 128  | 4 | 32 | round state
+| Vs2 | input  | 128  | 4 | 32 | Round key
+| Vd  | output | 128  | 4 | 32 | new round state
 |===
 
 Description:: 
@@ -56,17 +71,18 @@ This instruction operates on element groups in the source and destination regist
 - Effective Element Width (EEW) = 32 bits
 - Element Group Size (EGS) = 4 elements
 
+This instruction ignores `vtype.vsew`. +
+The number of element groups to be processed is `vl`/`EGS`.
+`vl` must be set to the number of `EEW=32` elements to be processed and 
+therefore must be a multiple of `EGS=4`. + 
+Likewise, `vstart` must be a multiple of `EGS=4`
 
-This instruction treats `EEW=32` and `EGS=4`, regardless of `vtype.vsew`
-In order to properly specify the number of elements, vl needs to be set to
-vl = `vtype.vsew`/128. If vstart is not zero, it needs to be scaled similarly.
-This instruction requires that `Zvl128b` be implemented (i.e `VLEN>=128`).
+// This instruction requires that `Zvl128b` be implemented (i.e `VLEN>=128`).
 
 Operation::
 [source,sail]
 --
 function clause execute (VAESDS(vs2, vd, vv)) = {
-  assert(VLEN>=128);
 // calculate the number of element groups (eg)
   eg = (vl/EGS) 
   foreach (i from vstart to eg) {

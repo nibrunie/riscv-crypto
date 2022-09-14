@@ -4,6 +4,12 @@
 Synopsis::
 Vector rotate left by vector/scalar/immediate.
 
+Only the log2(SEW) bits are used for the rotate amount.
+
+Note::
+The immediate form of this instruction doesn't support all rotate amounts as 6 bits are required
+to encode these. This is the same limitation as exists in the vector shift instructions.
+
 Mnemonic::
 vrol.vv vd, vs2, vs1, vm +
 vrol.vx vd, vs2, rs1, vm + 
@@ -13,9 +19,9 @@ Encoding (Vector-Scalar)::
 [wavedrom, , svg]
 ....
 {reg:[
-{bits: 7, name: 'OPMVV'},
+{bits: 7, name: 'OP-V'},
 {bits: 5, name: 'vd'},
-{bits: 3, name: 'func3'},
+{bits: 3, name: 'OPMVV'},
 {bits: 5, name: 'rs1'},
 {bits: 5, name: 'vs2'},
 {bits: 1, name: 'vm'},
@@ -27,9 +33,9 @@ Encoding (Vector-Vector)::
 [wavedrom, , svg]
 ....
 {reg:[
-{bits: 7, name: 'OPMVV'},
+{bits: 7, name: 'OP-V'},
 {bits: 5, name: 'vd'},
-{bits: 3, name: 'func3'},
+{bits: 3, name: 'OPMVV'},
 {bits: 5, name: 'vs1'},
 {bits: 5, name: 'vs2'},
 {bits: 1, name: 'vm'},
@@ -41,20 +47,15 @@ Encoding (Vector-Immediate)::
 [wavedrom, , svg]
 ....
 {reg:[
-{bits: 7, name: 'OPMVV'},
+{bits: 7, name: 'OP-V'},
 {bits: 5, name: 'vd'},
-{bits: 3, name: 'func3'},
+{bits: 3, name: 'OPMVV'},
 {bits: 5, name: 'imm'},
 {bits: 5, name: 'vs2'},
 {bits: 1, name: 'vm'},
 {bits: 6, name: 'funct6'},
 ]}
 ....
-
-Note::
-The immediate form needs a different instruction encoding than other vector instructions as they are limited to 5 bit immediates
-which are held in the vs1 register field (bits 19:15). We need 6 bits to encode all rotate amounts from 0 to 63. 
-
 
 Description:: 
 This instruction performs a bitwise left rotation on vector elements.
